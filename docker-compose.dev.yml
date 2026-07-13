@@ -9,7 +9,8 @@ services:
       POSTGRES_PASSWORD: deepcut
       POSTGRES_DB: deepcut
     ports:
-      - "5432:5432"
+      # 5433 on the host: 5432 is commonly taken by a native Postgres install
+      - "5433:5432"
     volumes:
       - deepcut_pgdata:/var/lib/postgresql/data
     healthcheck:

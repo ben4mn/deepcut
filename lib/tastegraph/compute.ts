@@ -1,26 +1,28 @@
 /**
- * Tastegraph scoring. Computes TasteSnapshot rows (per user, entity, window)
- * from raw Play history.
+ * Tastegraph scoring pipeline (per user, nightly).
  *
- * For each window we aggregate plays (joined to their track) into per-TRACK and
- * per-ARTIST rows:
- *   - playCount   : number of plays, EXCLUDING skip-noise (skipped=true AND
- *                   msPlayed < 30s). TODO: those excluded plays should later
- *                   feed a negative "skip signal".
- *   - msPlayed    : total ms listened
- *   - playPctAvg  : avg(min(msPlayed/durationMs, 1)) over plays with both values
- *   - score       : playCount * (0.5 + 0.5 * (playPctAvg ?? 0.75))
+ * Stages, in order (DESIGN §9 build order):
+ *   1. sessionize   — reconstruct 30-min-gap listening sessions (persists Play.sessionId)
+ *   2. calibration  — ListenerProfile meta-traits (§6.1), computed first so its
+ *                     completionMultiplier normalizes everything downstream
+ *   3. lifecycles   — per user+track TrackLifecycle rows: three clocks, quadrant,
+ *                     burnout/resurrection, curve shape (§2–4, §6.3)
+ *   4. snapshots    — the windowed TasteSnapshot aggregation the dashboard reads.
+ *                     Kept intact (same columns), but its `score` is upgraded to a
+ *                     Season-style EventValue-weighted sum (§1) instead of the flat
+ *                     play-count heuristic.
  *
- * GENRE snapshots are skipped for v0 — Artist.genres is empty until we add
- * enrichment. TODO: aggregate genre snapshots once genres are populated.
- *
- * Snapshots are fully derived, so each run deletes and recreates all rows for a
+ * Snapshots stay fully derived: each run deletes and recreates all rows for a
  * given (user, window) inside a transaction.
  */
 
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { WINDOWS, windowStart, windowEnd, type Window } from "@/lib/tastegraph/windows";
+import { sessionizeUser } from "@/lib/tastegraph/sessionize";
+import { computeListenerProfile } from "@/lib/tastegraph/calibration";
+import { computeTrackLifecycles } from "@/lib/tastegraph/lifecycle";
+import { generateAllPlaylists } from "@/lib/playlists";
 
 const DEFAULT_PLAY_PCT = 0.75;
 
@@ -29,11 +31,7 @@ interface AggRow {
   playCount: number;
   msPlayed: bigint;
   playPctAvg: number | null;
-}
-
-/** Score from the raw aggregates. */
-function scoreOf(playCount: number, playPctAvg: number | null): number {
-  return playCount * (0.5 + 0.5 * (playPctAvg ?? DEFAULT_PLAY_PCT));
+  score: number;
 }
 
 /** SQL fragment restricting plays to the given window's [start, end) range. */
@@ -42,8 +40,6 @@ function timeClause(window: string, now: Date): Prisma.Sql {
   if (start === null) {
     return Prisma.empty; // ALL — no lower bound
   }
-  // Year windows have an exclusive upper bound; rolling/ALL end at `now`, and
-  // plays can't be in the future, so no upper bound is needed for those.
   const isYear = /^Y\d{4}$/.test(window);
   if (isYear) {
     const end = windowEnd(window, now);
@@ -52,11 +48,46 @@ function timeClause(window: string, now: Date): Prisma.Sql {
   return Prisma.sql`AND p."playedAt" >= ${start}`;
 }
 
-async function aggregateTracks(
-  userId: string,
-  window: string,
-  now: Date
-): Promise<AggRow[]> {
+/**
+ * Per-play EventValue approximation in SQL (DESIGN §1), summed into the snapshot
+ * `score`. Mirrors lib/tastegraph/eventValue.ts (start weight × end factor ×
+ * completion^0.7), but without decay — the window already bounds time — and
+ * without the context bonuses (those need in-memory session reconstruction).
+ * POLL rows (null reasons) land at ~0.9 × 0.9 × 0.85 ≈ 0.69, i.e. baseline.
+ */
+const EVENT_VALUE_SQL = Prisma.sql`
+  (
+    CASE p."reasonStart"
+      WHEN 'backbtn'  THEN 2.0
+      WHEN 'clickrow' THEN 1.5
+      WHEN 'search'   THEN 1.5
+      WHEN 'playbtn'  THEN 1.5
+      WHEN 'trackdone' THEN 1.0
+      ELSE 0.9
+    END
+    *
+    CASE
+      WHEN p."reasonEnd" ILIKE '%unexpected%' THEN 0.0
+      WHEN p."reasonEnd" = 'trackdone' THEN 1.0
+      WHEN p."reasonEnd" IN ('endplay','logout') THEN 0.9
+      WHEN p."reasonEnd" = 'fwdbtn' AND p."msPlayed" IS NOT NULL AND t."durationMs" > 0
+           AND (p."msPlayed"::float8 / t."durationMs") > 0.8 THEN 0.8
+      WHEN p."reasonEnd" = 'fwdbtn' AND p."msPlayed" IS NOT NULL AND t."durationMs" > 0
+           AND (p."msPlayed"::float8 / t."durationMs") < 0.25 AND p."msPlayed" < 60000 THEN -0.8
+      WHEN p."reasonEnd" = 'fwdbtn' AND p."msPlayed" IS NOT NULL AND t."durationMs" > 0 THEN 0.1
+      WHEN p."reasonEnd" = 'fwdbtn' THEN 0.5
+      ELSE 0.9
+    END
+    *
+    CASE
+      WHEN p."msPlayed" IS NOT NULL AND t."durationMs" > 0
+        THEN power(LEAST(p."msPlayed"::float8 / t."durationMs", 1), 0.7)
+      ELSE 0.85
+    END
+  )
+`;
+
+async function aggregateTracks(userId: string, window: string, now: Date): Promise<AggRow[]> {
   return db.$queryRaw<AggRow[]>`
     SELECT
       t.id AS "entityId",
@@ -67,7 +98,8 @@ async function aggregateTracks(
           WHEN p."msPlayed" IS NOT NULL AND t."durationMs" IS NOT NULL AND t."durationMs" > 0
           THEN LEAST(p."msPlayed"::float8 / t."durationMs", 1)
         END
-      )::float8 AS "playPctAvg"
+      )::float8 AS "playPctAvg",
+      SUM(${EVENT_VALUE_SQL})::float8 AS "score"
     FROM "Play" p
     JOIN "Track" t ON t.id = p."trackId"
     WHERE p."userId" = ${userId} ${timeClause(window, now)}
@@ -75,11 +107,7 @@ async function aggregateTracks(
   `;
 }
 
-async function aggregateArtists(
-  userId: string,
-  window: string,
-  now: Date
-): Promise<AggRow[]> {
+async function aggregateArtists(userId: string, window: string, now: Date): Promise<AggRow[]> {
   // entityId = artistId when set, else the (denormalized) artistName.
   return db.$queryRaw<AggRow[]>`
     SELECT
@@ -91,7 +119,8 @@ async function aggregateArtists(
           WHEN p."msPlayed" IS NOT NULL AND t."durationMs" IS NOT NULL AND t."durationMs" > 0
           THEN LEAST(p."msPlayed"::float8 / t."durationMs", 1)
         END
-      )::float8 AS "playPctAvg"
+      )::float8 AS "playPctAvg",
+      SUM(${EVENT_VALUE_SQL})::float8 AS "score"
     FROM "Play" p
     JOIN "Track" t ON t.id = p."trackId"
     WHERE p."userId" = ${userId} ${timeClause(window, now)}
@@ -124,12 +153,13 @@ function toSnapshotRows(
     playCount: r.playCount,
     msPlayed: r.msPlayed,
     playPctAvg: r.playPctAvg,
-    score: scoreOf(r.playCount, r.playPctAvg),
+    // EventValue-weighted sum from SQL; guard nulls (empty aggregate) → 0.
+    score: r.score ?? DEFAULT_PLAY_PCT * r.playCount,
   }));
 }
 
-export async function computeUserTastegraph(userId: string): Promise<void> {
-  const now = new Date();
+/** Stage 4: the windowed TasteSnapshot aggregation the dashboard reads. */
+async function computeSnapshots(userId: string, now: Date): Promise<void> {
   const windows: string[] = [...WINDOWS, ...(await yearWindows(userId))];
 
   for (const window of windows) {
@@ -143,12 +173,38 @@ export async function computeUserTastegraph(userId: string): Promise<void> {
       ...toSnapshotRows(userId, window, "ARTIST", artistRows),
     ];
 
-    // Snapshots are derived: replace the whole (user, window) set atomically.
     await db.$transaction([
       db.tasteSnapshot.deleteMany({ where: { userId, window } }),
       db.tasteSnapshot.createMany({ data: snapshotRows }),
     ]);
   }
+}
+
+export async function computeUserTastegraph(userId: string): Promise<void> {
+  const now = new Date();
+
+  const t0 = Date.now();
+  const session = await sessionizeUser(userId);
+  const t1 = Date.now();
+  const profile = await computeListenerProfile(userId);
+  const t2 = Date.now();
+  const lifecycleCount = await computeTrackLifecycles(userId, now, profile.completionMultiplier);
+  const t3 = Date.now();
+  await computeSnapshots(userId, now);
+  const t4 = Date.now();
+  const playlists = await generateAllPlaylists(userId, now);
+  const t5 = Date.now();
+
+  console.log(
+    `[tastegraph/compute] user ${userId}: ` +
+      `sessionize ${t1 - t0}ms (${session.sessionsFound} sessions, ${session.playsUpdated} plays updated), ` +
+      `calibration ${t2 - t1}ms (restlessness ${profile.restlessness.toFixed(3)}, ` +
+      `×${profile.completionMultiplier.toFixed(2)}), ` +
+      `lifecycles ${t3 - t2}ms (${lifecycleCount} tracks), ` +
+      `snapshots ${t4 - t3}ms, ` +
+      `playlists ${t5 - t4}ms (${playlists.playlists} lists, ${playlists.items} items), ` +
+      `total ${t5 - t0}ms`
+  );
 }
 
 export async function computeAllTastegraphs(): Promise<void> {

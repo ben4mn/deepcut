@@ -27,6 +27,9 @@ export interface NormalizedPlay {
   reasonStart: string | null;
   reasonEnd: string | null;
   shuffle: boolean | null;
+  offline: boolean | null;
+  incognito: boolean | null;
+  platform: string | null;
   source: ImportSource;
 }
 
@@ -44,6 +47,7 @@ interface ExtendedRecord {
   skipped?: boolean | null;
   offline?: boolean | null;
   incognito_mode?: boolean | null;
+  platform?: string | null;
   episode_name?: string | null;
 }
 
@@ -120,6 +124,9 @@ function parseExtendedRecord(rec: ExtendedRecord): NormalizedPlay | null {
     reasonStart: rec.reason_start ?? null,
     reasonEnd: rec.reason_end ?? null,
     shuffle: typeof rec.shuffle === "boolean" ? rec.shuffle : null,
+    offline: typeof rec.offline === "boolean" ? rec.offline : null,
+    incognito: typeof rec.incognito_mode === "boolean" ? rec.incognito_mode : null,
+    platform: typeof rec.platform === "string" ? rec.platform : null,
     source: "EXPORT",
   };
 }
@@ -145,6 +152,9 @@ function parseAccountRecord(rec: AccountRecord): NormalizedPlay | null {
     reasonStart: null,
     reasonEnd: null,
     shuffle: null,
+    offline: null,
+    incognito: null,
+    platform: null,
     source: "EXPORT_ACCOUNT",
   };
 }

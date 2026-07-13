@@ -63,6 +63,9 @@ export interface InsertPlayInput {
   reasonEnd?: string | null;
   shuffle?: boolean | null;
   context?: string | null;
+  offline?: boolean | null;
+  incognito?: boolean | null;
+  platform?: string | null;
 }
 
 export interface InsertPlayResult {
@@ -88,6 +91,9 @@ export async function insertPlay(db: Db, input: InsertPlayInput): Promise<Insert
     reasonEnd = null,
     shuffle = null,
     context = null,
+    offline = null,
+    incognito = null,
+    platform = null,
   } = input;
 
   try {
@@ -103,6 +109,9 @@ export async function insertPlay(db: Db, input: InsertPlayInput): Promise<Insert
         reasonEnd,
         shuffle,
         context,
+        offline,
+        incognito,
+        platform,
       },
     });
     return { inserted: true };

@@ -1,0 +1,606 @@
+{
+  "seed": 42,
+  "generatedAt": "2026-07-13T01:33:44.788Z",
+  "rangeStart": "2023-01-12T00:00:00.000Z",
+  "rangeEnd": "2026-07-13T01:33:44.461Z",
+  "totalRecords": 42785,
+  "forcedPatternRecords": 11742,
+  "backgroundRecords": 31043,
+  "patterns": {
+    "stableCanon": {
+      "trackUris": [
+        "spotify:track:nZBRyOqtpK3fyvP2jCMn3Q",
+        "spotify:track:msOvKldCQabHJ9FwWBBExE",
+        "spotify:track:RSG9IdEK5aho6ZuibDSH5w",
+        "spotify:track:zbhKMDPFVHhJPamySIY8FI",
+        "spotify:track:nOyFMw8QdduA83Nps4ZzBE",
+        "spotify:track:fjVaDtr9QAIl9r4YJ9R7yG",
+        "spotify:track:kK76cRZPVWn1RuVpce8GyJ",
+        "spotify:track:VJkfoZOOFgQ7aR352BSfFp",
+        "spotify:track:koqFS7dGdZFxgnpQW3Jpfb",
+        "spotify:track:3S0a9SCCsnaBlK9DMDgiZM",
+        "spotify:track:gH2exYKrR8JfM2AJq99jVv",
+        "spotify:track:63TJ4aWvDc81d9sR2sRDBw",
+        "spotify:track:jywCNapfmrrPCAxrm6JDXN",
+        "spotify:track:hOjoPjIh8PqsYxge2gPLu5",
+        "spotify:track:TUBIYtfC8SKewazVnAJaNX",
+        "spotify:track:tiUOnhzYBpKtyJQPqB342i",
+        "spotify:track:sGclnHywXumriTScEUAa4X",
+        "spotify:track:tz6peXUjjdc9KoLa6pX9Lv",
+        "spotify:track:I2HEFgrxICGjtnjYX4bPuF",
+        "spotify:track:tolw3kI5x9FGXGrXrJToAP",
+        "spotify:track:r0XIqpv52TcEQYkg9jRqV3",
+        "spotify:track:sMjdQljUHNvLaFt1tPexrr",
+        "spotify:track:JfNz8j2oZ9zMar2cTGgzrc",
+        "spotify:track:ZUzGyC6EDA85ttaOk9pDOn",
+        "spotify:track:ZDdadKTvrfURp9fiRMszut",
+        "spotify:track:xnsZ9L060aFES6V4QN4KGS",
+        "spotify:track:mzibNcQ2eAdGvMeSX6sgIO",
+        "spotify:track:HeoD9C6t8u1HOsy1XrG4WC",
+        "spotify:track:ekz0wSC4nfs7ZQYBTwieD0",
+        "spotify:track:HEVuZRyMMfWqTzDiEGrHYc"
+      ],
+      "quarters": 15,
+      "totalPlays": 1373,
+      "note": "played every quarter across the full range, low skip, high completion"
+    },
+    "comets": [
+      {
+        "trackUri": "spotify:track:aMnyFjS5h1D0JvXq3Tm7SG",
+        "burstStart": "2024-09-07T00:00:00.000Z",
+        "burstEnd": "2024-09-21T00:00:00.000Z",
+        "plays": 33,
+        "note": "no plays before or after the burst window"
+      },
+      {
+        "trackUri": "spotify:track:WwYxtafNJizebtb7zcWXMK",
+        "burstStart": "2023-06-07T00:00:00.000Z",
+        "burstEnd": "2023-06-21T00:00:00.000Z",
+        "plays": 22,
+        "note": "no plays before or after the burst window"
+      },
+      {
+        "trackUri": "spotify:track:deEEQ1mnpE8NV8dI37Asws",
+        "burstStart": "2023-08-27T00:00:00.000Z",
+        "burstEnd": "2023-09-10T00:00:00.000Z",
+        "plays": 36,
+        "note": "no plays before or after the burst window"
+      },
+      {
+        "trackUri": "spotify:track:e14r0WMDfmR88s8PxESfn9",
+        "burstStart": "2024-02-18T00:00:00.000Z",
+        "burstEnd": "2024-03-03T00:00:00.000Z",
+        "plays": 43,
+        "note": "no plays before or after the burst window"
+      },
+      {
+        "trackUri": "spotify:track:hgFuC0YgUGfu7lEOl5oHP5",
+        "burstStart": "2026-03-04T00:00:00.000Z",
+        "burstEnd": "2026-03-18T00:00:00.000Z",
+        "plays": 35,
+        "note": "no plays before or after the burst window"
+      },
+      {
+        "trackUri": "spotify:track:gTVqkGOwt8Jds6smKBHF1P",
+        "burstStart": "2023-01-15T00:00:00.000Z",
+        "burstEnd": "2023-01-29T00:00:00.000Z",
+        "plays": 34,
+        "note": "no plays before or after the burst window"
+      },
+      {
+        "trackUri": "spotify:track:uaqhaKITRxymwAY28fGVkw",
+        "burstStart": "2025-02-26T00:00:00.000Z",
+        "burstEnd": "2025-03-12T00:00:00.000Z",
+        "plays": 27,
+        "note": "no plays before or after the burst window"
+      },
+      {
+        "trackUri": "spotify:track:mwWnXR3vJtrSdQdfHFAkg5",
+        "burstStart": "2025-04-20T00:00:00.000Z",
+        "burstEnd": "2025-05-04T00:00:00.000Z",
+        "plays": 43,
+        "note": "no plays before or after the burst window"
+      },
+      {
+        "trackUri": "spotify:track:kM2dsHYBc7vXtwIJETw51x",
+        "burstStart": "2023-04-10T00:00:00.000Z",
+        "burstEnd": "2023-04-24T00:00:00.000Z",
+        "plays": 40,
+        "note": "no plays before or after the burst window"
+      },
+      {
+        "trackUri": "spotify:track:sW7D6tcSQWQMBrJPCxFtic",
+        "burstStart": "2024-01-13T00:00:00.000Z",
+        "burstEnd": "2024-01-27T00:00:00.000Z",
+        "plays": 37,
+        "note": "no plays before or after the burst window"
+      }
+    ],
+    "sleepersGrowers": [
+      {
+        "trackUri": "spotify:track:sNNUQ4WLLMuS9Lbzqna3Bn",
+        "transitionDay": "2023-07-11T00:00:00.000Z",
+        "sparsePlays": 5,
+        "densePlays": 104
+      },
+      {
+        "trackUri": "spotify:track:NSoBfxG9mdJG9KGxepsnzi",
+        "transitionDay": "2023-07-11T00:00:00.000Z",
+        "sparsePlays": 6,
+        "densePlays": 107
+      },
+      {
+        "trackUri": "spotify:track:v0n70L5jxRt7Zw4lVYHBST",
+        "transitionDay": "2023-07-11T00:00:00.000Z",
+        "sparsePlays": 6,
+        "densePlays": 86
+      },
+      {
+        "trackUri": "spotify:track:q6p7TGbvF8yNqRQnQAAKZg",
+        "transitionDay": "2023-07-11T00:00:00.000Z",
+        "sparsePlays": 8,
+        "densePlays": 89
+      },
+      {
+        "trackUri": "spotify:track:tcYCdv8dT9h7pxqlKVgaLF",
+        "transitionDay": "2023-07-11T00:00:00.000Z",
+        "sparsePlays": 8,
+        "densePlays": 61
+      },
+      {
+        "trackUri": "spotify:track:9Zt23UBiTuwbvLQKfQHDvt",
+        "transitionDay": "2023-07-11T00:00:00.000Z",
+        "sparsePlays": 5,
+        "densePlays": 67
+      },
+      {
+        "trackUri": "spotify:track:XtKpVZO1ofNkqMSXr6qSZg",
+        "transitionDay": "2023-07-11T00:00:00.000Z",
+        "sparsePlays": 5,
+        "densePlays": 97
+      },
+      {
+        "trackUri": "spotify:track:vLFfqASyl6AgAg8dzgGniv",
+        "transitionDay": "2023-07-11T00:00:00.000Z",
+        "sparsePlays": 7,
+        "densePlays": 70
+      },
+      {
+        "trackUri": "spotify:track:myV4HIAfAF9gVaRLTCDFAe",
+        "transitionDay": "2023-07-11T00:00:00.000Z",
+        "sparsePlays": 8,
+        "densePlays": 91
+      },
+      {
+        "trackUri": "spotify:track:zukFHwAyhAROzouhsIFcQm",
+        "transitionDay": "2023-07-11T00:00:00.000Z",
+        "sparsePlays": 4,
+        "densePlays": 64
+      }
+    ],
+    "weeklyRitual": [
+      {
+        "trackUri": "spotify:track:4f0FzCkrwUac8hVRXAo0pp",
+        "weekday": 2,
+        "hour": 12,
+        "occurrences": 183,
+        "note": "~7d cadence, low variance"
+      },
+      {
+        "trackUri": "spotify:track:3Hrg8D6FuZcQCvu7fDmHQc",
+        "weekday": 3,
+        "hour": 17,
+        "occurrences": 180,
+        "note": "~7d cadence, low variance"
+      },
+      {
+        "trackUri": "spotify:track:NEo3RR5QhHbZMBXz1BIUqF",
+        "weekday": 5,
+        "hour": 19,
+        "occurrences": 182,
+        "note": "~7d cadence, low variance"
+      },
+      {
+        "trackUri": "spotify:track:cyY05RFm9G1kRa6wEwsR68",
+        "weekday": 4,
+        "hour": 9,
+        "occurrences": 184,
+        "note": "~7d cadence, low variance"
+      },
+      {
+        "trackUri": "spotify:track:hZoBhW0H2ZZJDkb6b8m4za",
+        "weekday": 5,
+        "hour": 21,
+        "occurrences": 184,
+        "note": "~7d cadence, low variance"
+      },
+      {
+        "trackUri": "spotify:track:sZT0uUYkq3N9qZ0WPc84Fq",
+        "weekday": 0,
+        "hour": 17,
+        "occurrences": 180,
+        "note": "~7d cadence, low variance"
+      }
+    ],
+    "nightTracks": [
+      {
+        "trackUri": "spotify:track:9rXIWMhvIMFYsDjPHI3vY7",
+        "plays": 136,
+        "hourRange": "1-4am"
+      },
+      {
+        "trackUri": "spotify:track:n4W3J8c2tfjW06Cv1WsnjR",
+        "plays": 92,
+        "hourRange": "1-4am"
+      },
+      {
+        "trackUri": "spotify:track:cPvAKALLiOVSCfdOysEZkL",
+        "plays": 128,
+        "hourRange": "1-4am"
+      },
+      {
+        "trackUri": "spotify:track:1DW2wmc92g9y6CqRRsAnmS",
+        "plays": 105,
+        "hourRange": "1-4am"
+      },
+      {
+        "trackUri": "spotify:track:QxB4WXVvSvPZehMSICHGGt",
+        "plays": 112,
+        "hourRange": "1-4am"
+      },
+      {
+        "trackUri": "spotify:track:3gpyoqcYQ1HYtDupZeHYU5",
+        "plays": 125,
+        "hourRange": "1-4am"
+      }
+    ],
+    "morningCommute": {
+      "trackUris": [
+        "spotify:track:GmHjD8H9gqlPKVJKtJmnRH",
+        "spotify:track:RD15v5IBZPgGgBs92Yyh7t",
+        "spotify:track:seV7LpuRzFMLZVlUgCDZet",
+        "spotify:track:GkXdhAbUeMQ3t3EbLQdG5B",
+        "spotify:track:XF9jFJECLtsXNZuHKb6ZEG",
+        "spotify:track:bnfxBezjh0uQxx5Ay6kmPM",
+        "spotify:track:aYLQfESZsAiYGdlx0p83cj",
+        "spotify:track:CllHY5R5lp3AC2x3z36yfx"
+      ],
+      "window": "weekday 7-9am",
+      "platform": "ios",
+      "offline": true,
+      "sessions": 574
+    },
+    "skipStorms": {
+      "fodderTrackUris": [
+        "spotify:track:RBHKx41gwnlUVITil6xx62",
+        "spotify:track:VgknU79Eoz94rovQLvW08f",
+        "spotify:track:zzNgvyr9UQ5zBjIBItc68e",
+        "spotify:track:HMYJdbwk2WS6BeQEQQ1JCA",
+        "spotify:track:nJGNLQ4nDkkmrMPGhIhkCU",
+        "spotify:track:6x1lt7KehwTMjkgp8N748E",
+        "spotify:track:k1pqS4LZCvJKIBShwcDMRV",
+        "spotify:track:MleLCrrSRUBN9j9KKiSYaZ",
+        "spotify:track:ZrI2cZvV699N5ggazafOWK",
+        "spotify:track:UGWaaLoK1phEBHfu1orWad",
+        "spotify:track:T975tcQV7htVMLykdDLval",
+        "spotify:track:9MQDWaM8vLJXtkUtPUJ694",
+        "spotify:track:NF5kaJiQ3mky8lug3Y1xVG",
+        "spotify:track:ifR2t4vTjkmrJomJyWZFnE",
+        "spotify:track:d1hI3gMPtvNIRkcFjGzGhh"
+      ],
+      "palateCleanserTrackUris": [
+        "spotify:track:msOvKldCQabHJ9FwWBBExE",
+        "spotify:track:RSG9IdEK5aho6ZuibDSH5w"
+      ],
+      "storms": 123
+    },
+    "conspicuousAvoidance": [
+      {
+        "trackUri": "spotify:track:etxnb9mcGFHm8q3JaaqW94",
+        "serves": 22,
+        "note": "always skipped early despite repeated autoplay serves"
+      },
+      {
+        "trackUri": "spotify:track:TXLNCbIgljxjBRz6ADA7Sy",
+        "serves": 21,
+        "note": "always skipped early despite repeated autoplay serves"
+      },
+      {
+        "trackUri": "spotify:track:GazzP2RmeT8V0nw2eJAp9I",
+        "serves": 26,
+        "note": "always skipped early despite repeated autoplay serves"
+      },
+      {
+        "trackUri": "spotify:track:F9T84a3J0oS7jfifgL2XuI",
+        "serves": 24,
+        "note": "always skipped early despite repeated autoplay serves"
+      },
+      {
+        "trackUri": "spotify:track:15Q2CvhvgkKabsOPgZyCOX",
+        "serves": 29,
+        "note": "always skipped early despite repeated autoplay serves"
+      }
+    ],
+    "escapeVelocity": [
+      {
+        "trackUri": "spotify:track:fY1PDlBItKOKX8ds1yQzWP",
+        "plays": 18,
+        "note": "arrived at by skipping forward, then completed far above baseline"
+      },
+      {
+        "trackUri": "spotify:track:1dBE0oI3lPAt33qgaebV2j",
+        "plays": 18,
+        "note": "arrived at by skipping forward, then completed far above baseline"
+      }
+    ],
+    "incognitoCluster": {
+      "artistUri": "deepcut:fake-artist:74",
+      "artistName": "Artist 74",
+      "trackUris": [
+        "spotify:track:eyyxnmkbUJdboHauR6QGBd",
+        "spotify:track:m9jmeAtZR82ueFKMD7qPDQ",
+        "spotify:track:XuGGtobfO2ugHvRNq3t39x",
+        "spotify:track:yFfIMqKYkpyOl8nBx6TSeF",
+        "spotify:track:uuXXnHgjlk8gwE2eGbQdKp"
+      ],
+      "splitDate": "2024-08-09T00:00:00.000Z",
+      "earlyIncognitoRate": 0.8214285714285714,
+      "lateIncognitoRate": 0.15384615384615385,
+      "totalPlays": 108,
+      "note": "you stopped hiding this"
+    },
+    "sequencedAlbumSessions": [
+      {
+        "albumName": "Artist 14: Album 1",
+        "artistUri": "deepcut:fake-artist:14",
+        "trackUris": [
+          "spotify:track:PCqU6bNu13NPzWqO89bm0M",
+          "spotify:track:zAEmalURuHMVd2AuSPbkjy",
+          "spotify:track:UEQvPyOa3n4cdyl5IIEfuW",
+          "spotify:track:BlFSWEgf0lUV6yxxtpfPxt",
+          "spotify:track:vjxncYQylmZtVXXLaaHJ7g",
+          "spotify:track:AvV0q6m1pPkTSce07DSYzy",
+          "spotify:track:gqc4P7LoceaeTvLSxBLmMc"
+        ],
+        "sessions": 15
+      },
+      {
+        "albumName": "Artist 77: Album 1",
+        "artistUri": "deepcut:fake-artist:77",
+        "trackUris": [
+          "spotify:track:BXyIJwA5eBwghlUxmv2rjE",
+          "spotify:track:CDiLblLtw9REz8jUxBLQXC",
+          "spotify:track:pgOPnjvAPZCZ3uqxSZvT1W",
+          "spotify:track:RwhcpPydU4MoyHEprEnkda",
+          "spotify:track:fXaUu5H2SFOiSgDcuXuugS",
+          "spotify:track:9HSFoM0IIgCXeTVtITA5On",
+          "spotify:track:S3wFrJfx43HOv4VQOPypL9",
+          "spotify:track:ZH83yNk2qC2gdcmhiItqL1"
+        ],
+        "sessions": 14
+      },
+      {
+        "albumName": "Artist 52: Album 1",
+        "artistUri": "deepcut:fake-artist:52",
+        "trackUris": [
+          "spotify:track:LRnuVQBZOW2tfe4eLrTxuD",
+          "spotify:track:HCtjThVQa9FNnzEwmpQox7",
+          "spotify:track:rNtv9PWv1kSEVZBriunrdp",
+          "spotify:track:0PzQ24wYTdRnWKfhKfjnIY"
+        ],
+        "sessions": 14
+      },
+      {
+        "albumName": "Artist 19: Album 1",
+        "artistUri": "deepcut:fake-artist:19",
+        "trackUris": [
+          "spotify:track:y2CRFr1zMj1o8OYVBjqRBH",
+          "spotify:track:iTGJjTs66xKSdJyjrUuri4",
+          "spotify:track:IxxRIfn3628RmhF9D4cNR1",
+          "spotify:track:Z8fEu3TEIprNWoQ80RZJXl",
+          "spotify:track:jdvFXfm74Xype9ekF5Jd7x"
+        ],
+        "sessions": 15
+      }
+    ],
+    "backbtnBeloved": {
+      "trackUris": [
+        "spotify:track:ZUzGyC6EDA85ttaOk9pDOn",
+        "spotify:track:JfNz8j2oZ9zMar2cTGgzrc",
+        "spotify:track:HEVuZRyMMfWqTzDiEGrHYc",
+        "spotify:track:VJkfoZOOFgQ7aR352BSfFp",
+        "spotify:track:hOjoPjIh8PqsYxge2gPLu5",
+        "spotify:track:sGclnHywXumriTScEUAa4X",
+        "spotify:track:3S0a9SCCsnaBlK9DMDgiZM",
+        "spotify:track:RSG9IdEK5aho6ZuibDSH5w"
+      ],
+      "replayEvents": 96,
+      "note": "immediate replay via backbtn right after finishing"
+    },
+    "resurrectionArtists": [
+      {
+        "artistUri": "deepcut:fake-artist:12",
+        "artistName": "Artist 12",
+        "trackUris": [
+          "spotify:track:51nqpMoq4GSroYrwDW9TGG",
+          "spotify:track:gVjCpr183pHiyZGzWdQrFE",
+          "spotify:track:YAxtorTPULzfH8aBVFYJDZ",
+          "spotify:track:63jFBS0ukTksjzWrT9p4m9",
+          "spotify:track:l7DlJ7qaSp1d6HYQxfupGv",
+          "spotify:track:4HIUoKdE8isRA1hNCE1paa",
+          "spotify:track:kLgIHOSLYvKXRS9GyLdPQk",
+          "spotify:track:k2DOyssNr3Z1RLrgDT1xNl",
+          "spotify:track:cfizxyFCtu8lJOxWsGYdED",
+          "spotify:track:oDqWjFfP4iHuTayCWoD4sX",
+          "spotify:track:HOSEpPrbgKys192IRggLFc"
+        ],
+        "heavyPeriod1": {
+          "start": "2023-01-12T00:00:00.000Z",
+          "end": "2023-10-20T00:00:00.000Z",
+          "plays": 190
+        },
+        "silentPeriod": {
+          "start": "2023-10-20T00:00:00.000Z",
+          "end": "2024-12-14T00:00:00.000Z"
+        },
+        "heavyPeriod2": {
+          "start": "2024-12-14T00:00:00.000Z",
+          "end": "2026-07-13T00:00:00.000Z",
+          "plays": 233
+        }
+      },
+      {
+        "artistUri": "deepcut:fake-artist:68",
+        "artistName": "Artist 68",
+        "trackUris": [
+          "spotify:track:40zYMbnMdoaioDcFTNMyuG",
+          "spotify:track:oybLjf3Zh71IcUWFTgHntW",
+          "spotify:track:JaufoLUN4UPtO2WMN31k6U",
+          "spotify:track:9fpXzQBoKh0Euumsd5PS9e",
+          "spotify:track:G6xbYHhXxAP3RvHZjtGugy",
+          "spotify:track:1ImieLU30D913NsR2sDqbC"
+        ],
+        "heavyPeriod1": {
+          "start": "2023-01-12T00:00:00.000Z",
+          "end": "2023-10-20T00:00:00.000Z",
+          "plays": 193
+        },
+        "silentPeriod": {
+          "start": "2023-10-20T00:00:00.000Z",
+          "end": "2024-12-14T00:00:00.000Z"
+        },
+        "heavyPeriod2": {
+          "start": "2024-12-14T00:00:00.000Z",
+          "end": "2026-07-13T00:00:00.000Z",
+          "plays": 194
+        }
+      }
+    ],
+    "burnedTracks": [
+      {
+        "trackUri": "spotify:track:RCFjCMKp532crT7lkej2R2",
+        "peakWindow": {
+          "start": "2023-05-22T00:00:00.000Z",
+          "end": "2023-08-20T00:00:00.000Z",
+          "plays": 49,
+          "ratePerDay": 0.5444444444444444
+        },
+        "tailPlays": 57,
+        "tailRatePerDay": 0.05387523629489603,
+        "ratioOfPeak": 0.0989545156436866
+      },
+      {
+        "trackUri": "spotify:track:NsmwKkfLTeJQ07SZnJ6Zm4",
+        "peakWindow": {
+          "start": "2025-03-16T00:00:00.000Z",
+          "end": "2025-06-14T00:00:00.000Z",
+          "plays": 35,
+          "ratePerDay": 0.3888888888888889
+        },
+        "tailPlays": 15,
+        "tailRatePerDay": 0.03807106598984772,
+        "ratioOfPeak": 0.09789702683103699
+      },
+      {
+        "trackUri": "spotify:track:bCA7J2HgLk6aepfmiYNkLh",
+        "peakWindow": {
+          "start": "2024-03-26T00:00:00.000Z",
+          "end": "2024-06-24T00:00:00.000Z",
+          "plays": 60,
+          "ratePerDay": 0.6666666666666666
+        },
+        "tailPlays": 49,
+        "tailRatePerDay": 0.06542056074766354,
+        "ratioOfPeak": 0.09813084112149532
+      },
+      {
+        "trackUri": "spotify:track:kwOnQ9wJMIY25AEFXCpfUz",
+        "peakWindow": {
+          "start": "2023-03-06T00:00:00.000Z",
+          "end": "2023-06-04T00:00:00.000Z",
+          "plays": 44,
+          "ratePerDay": 0.4888888888888889
+        },
+        "tailPlays": 55,
+        "tailRatePerDay": 0.048458149779735685,
+        "ratioOfPeak": 0.09911894273127754
+      },
+      {
+        "trackUri": "spotify:track:oHVjGT4n0mRzyTeoiQD7qW",
+        "peakWindow": {
+          "start": "2023-11-26T00:00:00.000Z",
+          "end": "2024-02-24T00:00:00.000Z",
+          "plays": 38,
+          "ratePerDay": 0.4222222222222222
+        },
+        "tailPlays": 36,
+        "tailRatePerDay": 0.041379310344827586,
+        "ratioOfPeak": 0.09800362976406533
+      }
+    ],
+    "obsessionEras": [
+      {
+        "artistUri": "deepcut:fake-artist:108",
+        "artistName": "Artist 108",
+        "trackUris": [
+          "spotify:track:nsYl1OnBNO0ZWJTTfDyCUK",
+          "spotify:track:DOmfS5WDCgajE2C1yBOlcm",
+          "spotify:track:LYOaogQZwHSccK0nQGXZ6Z",
+          "spotify:track:wjhTkSssKvATJkvWfaO9Cv",
+          "spotify:track:ZlN6R6HBYuDhWbXNKFKTKv",
+          "spotify:track:g0MvcvyPBhicSOrodX9hKw"
+        ],
+        "windowStart": "2023-07-09T00:00:00.000Z",
+        "windowEnd": "2023-10-07T00:00:00.000Z",
+        "plays": 1124,
+        "windowTotalPlays": 3949,
+        "shareOfWindow": 0.28462902000506457
+      },
+      {
+        "artistUri": "deepcut:fake-artist:106",
+        "artistName": "Artist 106",
+        "trackUris": [
+          "spotify:track:0QzfOYoTGpEydVs2Ldqej4",
+          "spotify:track:yvBMy0AMg7RwuwYhqdIcs7",
+          "spotify:track:wNt1kfw7lOeH1TkE2qDTuB",
+          "spotify:track:7tXloBsDtsjckk5xPJyfKr",
+          "spotify:track:ralXTKyVmGfoLzV2hjI9nP",
+          "spotify:track:Qp9kPm7DLFqsmQvrREnsYt",
+          "spotify:track:mTxobifdZ54uazUotpnb0A",
+          "spotify:track:Y5msRAEGVIUXRVuw6VT6vL",
+          "spotify:track:OFRN9QcHhxXwAS6kUW7dwR",
+          "spotify:track:7ofDt9MSacxjrnYlIhx3Vs",
+          "spotify:track:4xJYrTDjzlFLslcqhFB6WM",
+          "spotify:track:28EJ5h2VWIemZ0385dgruw"
+        ],
+        "windowStart": "2024-08-21T00:00:00.000Z",
+        "windowEnd": "2024-11-19T00:00:00.000Z",
+        "plays": 1237,
+        "windowTotalPlays": 3915,
+        "shareOfWindow": 0.3159642401021711
+      },
+      {
+        "artistUri": "deepcut:fake-artist:62",
+        "artistName": "Artist 62",
+        "trackUris": [
+          "spotify:track:uMiwAOp01kzd1MKbRhs64J",
+          "spotify:track:SYybpwjoeMMd47wgpii6z4",
+          "spotify:track:oKXezoHkmRQ1MASY8ocCJv",
+          "spotify:track:u6i0MeZdQDVcG2X50dbd4G",
+          "spotify:track:UPZayo7sJH6tDgf8lnL4i5",
+          "spotify:track:VwMmjT9G0VULvMHRXjzivJ",
+          "spotify:track:ysVo0GI7wjj9pg33EtMS71",
+          "spotify:track:94UXhYhszVxRbBQ54pOtP0",
+          "spotify:track:RcTiSQ9w1aWpsPndKMpduf",
+          "spotify:track:9uSmJ3Q8gyxRXEYHghvM6k",
+          "spotify:track:J2hkWZfDAZPDNxKa9Ghx5S"
+        ],
+        "windowStart": "2025-10-04T00:00:00.000Z",
+        "windowEnd": "2026-01-02T00:00:00.000Z",
+        "plays": 1124,
+        "windowTotalPlays": 3965,
+        "shareOfWindow": 0.28348045397225724
+      }
+    ]
+  }
+}

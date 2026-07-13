@@ -10,7 +10,9 @@
     "worker": "tsx worker/index.ts",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "fixture": "tsx scripts/generate-fixture.ts",
+    "seed:demo": "tsx scripts/seed-demo.ts"
   },
   "dependencies": {
     "next": "^15.0.0",

@@ -19,6 +19,26 @@ https://ben4mn.github.io/deepcut/, stack running on the Debian box at http://192
 > calibration layer, 30+ derived signals with weights, the playlist portfolio, and the
 > 10-mechanism prediction engine. Build order is §9 of that doc.
 
+### Built 2026-07-12 (v1 core, verified with synthetic fixture)
+
+- [x] Event value model + three clocks (Pulse/Season/Core) — `lib/tastegraph/eventValue.ts`, `lifecycle.ts`
+- [x] Calibration layer (ListenerProfile) — `lib/tastegraph/calibration.ts`
+- [x] Session reconstruction (30-min gap) — `lib/tastegraph/sessionize.ts`
+- [x] TrackLifecycle: quadrants, burnout/cooldown, resurrection, curve shapes, honeymoon slope, heartbeat CV
+- [x] Play context fields (offline/incognito/platform) through importer
+- [x] Playlist engine (12 kinds incl. One-Artist Era flagship) — `lib/playlists/`, `/playlists` pages
+- [x] Dashboard v1: quadrant map, Desert-Island Core, listener meters
+- [x] Synthetic fixture rig — `npm run fixture && npm run seed:demo` (dev db is on **localhost:5433**)
+
+### Tuning debt (fixture showed these)
+
+- [ ] Curve-shape thresholds: only 1/5 planted comets and 3/5 growers classified (short-lifespan
+      tracks confuse peak-position logic); revisit `curveShape` rules in `lifecycle.ts`
+- [ ] Burnout detection caught 3/5 planted burns — sliding 28d peak vs fixture's 90d peak window
+- [ ] FULL_SEND produced 0 rows on fixture (zero-early-skip + ≥0.98 completion too strict vs
+      realistic jitter) — consider ≥0.95 completion or allow 1 early skip
+- [ ] Wallpaper-listening dampener (DESIGN §1) not yet implemented
+
 
 - [ ] Genre enrichment pipeline: MusicBrainz (canonical genres, ~1 req/s) + Last.fm tags, keyed off track/artist; populates `Artist.genres`, unlocks GENRE snapshots (currently TODO in `lib/tastegraph/compute.ts`)
 - [ ] Skip-signal: negative weighting from `skipped` + low `msPlayed` (data already stored, excluded from scores)

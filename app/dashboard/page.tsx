@@ -216,6 +216,292 @@ function Stat({
   );
 }
 
+// ---------------------------------------------------------------------------
+// Quadrant map (DESIGN §3 — intensity × durability), from TrackLifecycle.
+// ---------------------------------------------------------------------------
+
+type QuadrantKey = "ALL_TIMER" | "CURRENT_OBSESSION" | "SLEEPER" | "PHASE";
+
+interface QuadrantTile {
+  key: QuadrantKey;
+  label: string;
+  blurb: string;
+  count: number;
+  top: string[];
+}
+
+const QUADRANT_META: Record<QuadrantKey, { label: string; blurb: string }> = {
+  ALL_TIMER: { label: "All-Timers", blurb: "the canon" },
+  CURRENT_OBSESSION: { label: "Current Obsessions", blurb: "honeymoon phase" },
+  SLEEPER: { label: "Sleepers", blurb: "old faithfuls" },
+  PHASE: { label: "Phases", blurb: "time capsules" },
+};
+
+async function loadQuadrants(userId: string): Promise<QuadrantTile[]> {
+  const counts = await db.trackLifecycle.groupBy({
+    by: ["quadrant"],
+    where: { userId },
+    _count: { _all: true },
+  });
+  const countByQuadrant = new Map(counts.map((c) => [c.quadrant, c._count._all]));
+
+  const keys: QuadrantKey[] = ["ALL_TIMER", "CURRENT_OBSESSION", "SLEEPER", "PHASE"];
+  const tiles = await Promise.all(
+    keys.map(async (key) => {
+      const top = await db.trackLifecycle.findMany({
+        where: { userId, quadrant: key },
+        orderBy: { coreScore: "desc" },
+        take: 3,
+        select: { track: { select: { name: true } } },
+      });
+      return {
+        key,
+        label: QUADRANT_META[key].label,
+        blurb: QUADRANT_META[key].blurb,
+        count: countByQuadrant.get(key) ?? 0,
+        top: top.map((t) => t.track.name),
+      };
+    })
+  );
+  return tiles;
+}
+
+function QuadrantMap({ tiles }: { tiles: QuadrantTile[] }) {
+  const total = tiles.reduce((s, t) => s + t.count, 0);
+  if (total === 0) return null;
+  return (
+    <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-raised)] p-5">
+      <h2 className="mb-4 font-mono text-xs uppercase tracking-widest text-[var(--color-text-muted)]">
+        Taste map · intensity × durability
+      </h2>
+      <div className="grid grid-cols-2 gap-3">
+        {tiles.map((t) => (
+          <div
+            key={t.key}
+            className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] p-4"
+          >
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-sm font-medium text-[var(--color-text)]">{t.label}</span>
+              <span className="font-mono text-xs text-[var(--color-accent)]">{t.count}</span>
+            </div>
+            <p className="font-mono text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]">
+              {t.blurb}
+            </p>
+            <ul className="mt-2 space-y-0.5">
+              {t.top.length === 0 ? (
+                <li className="text-xs text-[var(--color-text-muted)]">—</li>
+              ) : (
+                t.top.map((name, i) => (
+                  <li key={i} className="truncate text-xs text-[var(--color-text-muted)]">
+                    {name}
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Desert-Island Core (DESIGN §6.4) — smallest set of tracks covering 50% of
+// lifetime msPlayed that appear in EVERY calendar year with plays.
+// ---------------------------------------------------------------------------
+
+interface DesertIslandTrack {
+  trackId: string;
+  name: string;
+  artist: string;
+  ms: number;
+}
+
+async function loadDesertIsland(
+  userId: string,
+  totalMs: number
+): Promise<{ tracks: DesertIslandTrack[]; setSize: number }> {
+  if (totalMs <= 0) return { tracks: [], setSize: 0 };
+
+  const rows = await db.$queryRaw<
+    { trackId: string; name: string; artist: string; ms: bigint }[]
+  >`
+    WITH years AS (
+      SELECT DISTINCT EXTRACT(YEAR FROM p."playedAt")::int AS yr
+      FROM "Play" p WHERE p."userId" = ${userId}
+    ),
+    track_years AS (
+      SELECT
+        p."trackId" AS "trackId",
+        COUNT(DISTINCT EXTRACT(YEAR FROM p."playedAt")) AS ny,
+        SUM(COALESCE(p."msPlayed", 0))::bigint AS ms
+      FROM "Play" p WHERE p."userId" = ${userId}
+      GROUP BY p."trackId"
+    )
+    SELECT ty."trackId" AS "trackId", t.name AS "name", t."artistName" AS "artist", ty.ms AS "ms"
+    FROM track_years ty JOIN "Track" t ON t.id = ty."trackId"
+    WHERE ty.ny = (SELECT COUNT(*) FROM years)
+    ORDER BY ty.ms DESC
+  `;
+
+  // Greedy largest-first until cumulative ms covers 50% of lifetime ms.
+  const target = totalMs * 0.5;
+  const picked: DesertIslandTrack[] = [];
+  let cum = 0;
+  for (const r of rows) {
+    const ms = Number(r.ms);
+    picked.push({ trackId: r.trackId, name: r.name, artist: r.artist, ms });
+    cum += ms;
+    if (cum >= target) break;
+  }
+  return { tracks: picked, setSize: picked.length };
+}
+
+function DesertIslandCore({
+  tracks,
+  setSize,
+}: {
+  tracks: DesertIslandTrack[];
+  setSize: number;
+}) {
+  return (
+    <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-raised)] p-5">
+      <h2 className="font-mono text-xs uppercase tracking-widest text-[var(--color-text-muted)]">
+        Desert-Island Core
+      </h2>
+      {tracks.length === 0 ? (
+        <p className="mt-3 text-sm text-[var(--color-text-muted)]">
+          Not enough history across years yet.
+        </p>
+      ) : (
+        <>
+          <p className="mt-1 text-sm text-[var(--color-text)]">
+            {setSize} {setSize === 1 ? "track" : "tracks"} are half of everything you&rsquo;ve
+            ever played — and you&rsquo;ve returned to each one every single year.
+          </p>
+          <ol className="mt-3 flex flex-col gap-1.5">
+            {tracks.slice(0, 12).map((t, i) => (
+              <li key={t.trackId} className="flex items-center gap-3">
+                <span className="w-5 shrink-0 text-right font-mono text-xs text-[var(--color-text-muted)]">
+                  {i + 1}
+                </span>
+                <span className="truncate text-sm text-[var(--color-text)]">
+                  {t.name}
+                  <span className="text-[var(--color-text-muted)]"> · {t.artist}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Listener profile strip (DESIGN §6.1) — calibration meta-traits as meters.
+// ---------------------------------------------------------------------------
+
+interface ProfileMeter {
+  label: string;
+  value: number; // 0-1 for the bar
+  line: string;
+}
+
+function buildProfileMeters(p: {
+  restlessness: number;
+  decisionDensity: number;
+  shuffleSurrender: number;
+}): ProfileMeter[] {
+  const restBar = Math.min(1, Math.max(0, p.restlessness));
+  const ddBar = Math.min(1, p.decisionDensity / 30); // ~30 manual events/hr ≈ very hands-on
+  const shufBar = Math.min(1, Math.max(0, p.shuffleSurrender));
+  return [
+    {
+      label: "Restlessness",
+      value: restBar,
+      line:
+        restBar >= 0.5
+          ? "quick on the skip button"
+          : restBar >= 0.2
+            ? "you give songs a fair shot"
+            : "you let songs breathe all the way",
+    },
+    {
+      label: "Decision density",
+      value: ddBar,
+      line:
+        ddBar >= 0.5
+          ? "you steer nearly every song"
+          : ddBar >= 0.2
+            ? "a mix of picking and coasting"
+            : "you mostly let it ride",
+    },
+    {
+      label: "Shuffle surrender",
+      value: shufBar,
+      line:
+        shufBar >= 0.6
+          ? "mostly lean-back, algorithm-fed listening"
+          : shufBar >= 0.3
+            ? "half chosen, half autopilot"
+            : "you pick what plays",
+    },
+  ];
+}
+
+function ProfileStrip({ meters }: { meters: ProfileMeter[] }) {
+  return (
+    <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-raised)] p-5">
+      <h2 className="mb-4 font-mono text-xs uppercase tracking-widest text-[var(--color-text-muted)]">
+        How you listen
+      </h2>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {meters.map((m) => (
+          <div key={m.label}>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-sm text-[var(--color-text)]">{m.label}</span>
+              <span className="font-mono text-xs text-[var(--color-text-muted)]">
+                {Math.round(m.value * 100)}
+              </span>
+            </div>
+            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-border)]">
+              <div
+                className="h-full rounded-full bg-[var(--color-accent)]"
+                style={{ width: `${Math.max(2, m.value * 100)}%` }}
+              />
+            </div>
+            <p className="mt-1.5 text-xs text-[var(--color-text-muted)]">{m.line}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PlaylistsLinkCard({ count }: { count: number }) {
+  return (
+    <Link
+      href="/playlists"
+      className="group flex items-center justify-between rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-raised)] p-5 transition-colors hover:border-[var(--color-accent)]"
+    >
+      <div>
+        <h2 className="font-mono text-xs uppercase tracking-widest text-[var(--color-text-muted)]">
+          Your playlists
+        </h2>
+        <p className="mt-1 text-sm text-[var(--color-text)]">
+          {count > 0
+            ? `${count} generated from your listening`
+            : "generated after your next nightly compute"}
+        </p>
+      </div>
+      <span className="font-mono text-lg text-[var(--color-accent)] transition-transform group-hover:translate-x-1">
+        →
+      </span>
+    </Link>
+  );
+}
+
 export default async function DashboardPage({
   searchParams,
 }: {
@@ -268,7 +554,18 @@ export default async function DashboardPage({
     : snapArtists;
 
   const totalPlays = totals._count._all;
-  const totalHours = ((totals._sum.msPlayed ?? 0) / 3_600_000).toFixed(1);
+  const totalMsPlayed = Number(totals._sum.msPlayed ?? 0);
+  const totalHours = (totalMsPlayed / 3_600_000).toFixed(1);
+
+  // Tastegraph v1 dashboard cards (all derived from TrackLifecycle / Play /
+  // ListenerProfile that the nightly compute produced).
+  const [quadrants, desertIsland, profile, playlistCount] = await Promise.all([
+    loadQuadrants(user.id),
+    loadDesertIsland(user.id, totalMsPlayed),
+    db.listenerProfile.findUnique({ where: { userId: user.id } }),
+    db.generatedPlaylist.count({ where: { userId: user.id } }),
+  ]);
+  const meters = profile ? buildProfileMeters(profile) : null;
 
   const initialImports: ImportRow[] = importRows.map((r) => ({
     id: r.id,
@@ -348,6 +645,15 @@ export default async function DashboardPage({
         <RankList rows={tracks} label={`Top tracks · ${selected}`} />
         <RankList rows={artists} label={`Top artists · ${selected}`} />
       </div>
+
+      {meters && <ProfileStrip meters={meters} />}
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <QuadrantMap tiles={quadrants} />
+        <DesertIslandCore tracks={desertIsland.tracks} setSize={desertIsland.setSize} />
+      </div>
+
+      <PlaylistsLinkCard count={playlistCount} />
 
       <ImportCard initialImports={initialImports} />
     </main>

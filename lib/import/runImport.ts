@@ -140,6 +140,9 @@ async function processChunk(
           reasonStart: p.reasonStart,
           reasonEnd: p.reasonEnd,
           shuffle: p.shuffle,
+          offline: p.offline,
+          incognito: p.incognito,
+          platform: p.platform,
         });
 
         if (inserted) {

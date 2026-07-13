@@ -27,10 +27,13 @@ model User {
   imageUrl    String?
   createdAt   DateTime @default(now())
 
-  account   SpotifyAccount?
-  plays     Play[]
-  snapshots TasteSnapshot[]
-  imports   ExportImport[]
+  account    SpotifyAccount?
+  plays      Play[]
+  snapshots  TasteSnapshot[]
+  imports    ExportImport[]
+  profile    ListenerProfile?
+  lifecycles TrackLifecycle[]
+  playlists  GeneratedPlaylist[]
 }
 
 model SpotifyAccount {
@@ -68,7 +71,9 @@ model Track {
   albumName  String?
   durationMs Int?
 
-  plays Play[]
+  plays      Play[]
+  lifecycles TrackLifecycle[]
+  playlistItems PlaylistItem[]
 
   @@index([artistName])
 }
@@ -88,10 +93,17 @@ model Play {
   shuffle     Boolean?
   context     String?
   source      PlaySource
+  // export-only play-context flags (null for POLL rows, which don't carry them)
+  offline     Boolean?
+  incognito   Boolean?
+  platform    String?
+  // reconstructed listening session id, `${userId}:${firstPlayISO}` (lib/tastegraph/sessionize.ts)
+  sessionId   String?
 
   @@unique([userId, trackId, playedAt])
   @@index([userId, playedAt])
   @@index([userId, source])
+  @@index([userId, sessionId])
 }
 
 model TasteSnapshot {
@@ -127,4 +139,114 @@ model ExportImport {
   error         String?
   createdAt     DateTime  @default(now())
   completedAt   DateTime?
+}
+
+/// Listener meta-traits (DESIGN §6.1 calibration layer). One row per user;
+/// normalizes completion-based signals so a patient 2014-listener and a
+/// trigger-happy 2026-listener are comparable. Computed by
+/// lib/tastegraph/calibration.ts.
+model ListenerProfile {
+  userId               String   @id
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // global early-skip propensity, 0-1
+  restlessness         Float
+  // manual events per listening hour
+  decisionDensity      Float
+  // passive-play share (shuffle + autoplay)
+  shuffleSurrender     Float
+  // completion rate on first-ever passive plays, 0-1
+  coldOpenTolerance    Float
+  // 168-cell hour×weekday activity map (weekday*24 + hour → play count)
+  deadZones            Json
+  // the ×0.7–1.4 completion normalizer derived from restlessness
+  completionMultiplier Float
+  computedAt           DateTime @default(now())
+}
+
+/// Per user+track lifecycle state (DESIGN §2–4, §6.3). Three decay clocks,
+/// the intensity×durability quadrant, burnout/resurrection flags and
+/// curve-shape descriptors. Fully derived — deleted and recreated each run by
+/// lib/tastegraph/lifecycle.ts.
+model TrackLifecycle {
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trackId String
+  track   Track  @relation(fields: [trackId], references: [id])
+
+  firstPlayAt   DateTime
+  lastPlayAt    DateTime
+  lifetimePlays Int
+  lifetimeMs    BigInt
+
+  // three clocks, EventValue-weighted (halflives 14/90/730d)
+  pulseScore  Float
+  seasonScore Float
+  coreScore   Float
+
+  // percentile of seasonScore within the user library (0-1)
+  intensityPct Float
+  durability   Float
+  // ALL_TIMER | CURRENT_OBSESSION | SLEEPER | PHASE
+  quadrant     String
+
+  // COMET | STAR | SLEEPER_GROWER (null when < 8 plays)
+  curveShape String?
+  // coefficient of variation of inter-play intervals (null when < 5 plays)
+  heartbeatCv Float?
+
+  peakRate28d    Float
+  currentRate28d Float
+
+  burned               Boolean   @default(false)
+  cooldownUntil        DateTime?
+  resurrectionEligible Boolean   @default(false)
+  // plays-per-day slope over the first 21 days after first play
+  honeymoonSlope Float?
+
+  computedAt DateTime @default(now())
+
+  @@unique([userId, trackId])
+  @@index([userId, quadrant])
+  @@index([userId, coreScore(sort: Desc)])
+}
+
+/// A generated playlist (DESIGN §7 portfolio). Fully derived from
+/// TrackLifecycle/Play/TasteSnapshot — deleted and recreated per (user, kind)
+/// on each compute run by lib/playlists/generators.ts. `spotifyPlaylistId` is
+/// null until the Spotify write phase; `meta` carries kind-specific context
+/// (e.g. One-Artist Era artist + date range).
+model GeneratedPlaylist {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // TOP_ALL_TIME | HEAVY_ROTATION | FULL_SEND | ONE_NIGHT_ONLY | GATEWAY_DRUGS |
+  // THIS_WEEK_EVERY_YEAR | COMEBACK_KIDS | RESURRECTION | ONE_HIT_WONDER |
+  // NEW_BLOOD | ON_THE_WAY_OUT | ONE_ARTIST_ERA
+  kind              String
+  title             String
+  // the wow-stat caption
+  description       String
+  generatedAt       DateTime @default(now())
+  spotifyPlaylistId String?
+  meta              Json?
+
+  items PlaylistItem[]
+
+  @@unique([userId, kind, title])
+  @@index([userId, kind])
+}
+
+/// One ranked track inside a GeneratedPlaylist. `stat` is the per-track
+/// wow-stat (e.g. "247 plays · 0 skips").
+model PlaylistItem {
+  id         String @id @default(cuid())
+  playlistId String
+  playlist   GeneratedPlaylist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  trackId    String
+  track      Track  @relation(fields: [trackId], references: [id])
+  position   Int
+  stat       String?
+
+  @@unique([playlistId, position])
 }
