@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>deepcut — your tastegraph, built from your real listening history</title>
+<meta name="description" content="Deepcut builds a weighted map of your music taste from your full Spotify listening history: rolling play counts, completion rates, artist and genre affinity, and era snapshots. Invite-only.">
+<meta name="color-scheme" content="dark">
+<style>
+  :root{
+    --bg: #0a0a0c;
+    --bg-raised: #121215;
+    --bg-line: #1c1c20;
+    --fg: #f1efe6;
+    --fg-dim: #a5a29a;
+    --fg-faint: #625f58;
+    --accent: #c8ff4d;
+    --accent-dim: #8fb544;
+    --border: rgba(241,239,230,0.10);
+    --border-strong: rgba(241,239,230,0.18);
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+
+  *, *::before, *::after{ box-sizing: border-box; }
+  html{ background: var(--bg); }
+  body{
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  body{
+    background-image:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(200,255,77,0.07), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 0%, rgba(200,255,77,0.04), transparent 55%);
+    background-repeat: no-repeat;
+  }
+
+  a{ color: inherit; }
+
+  img, svg{ display: block; max-width: 100%; }
+
+  .wrap{
+    max-width: 1120px;
+    margin: 0 auto;
+    padding-inline: clamp(20px, 5vw, 48px);
+  }
+
+  /* ---------- nav ---------- */
+  .nav{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: 22px;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-mark{
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    text-transform: lowercase;
+  }
+  .nav-status{
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    text-transform: uppercase;
+    border: 1px solid rgba(200,255,77,0.35);
+    border-radius: 999px;
+    padding: 4px 10px;
+    white-space: nowrap;
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    position: relative;
+    padding-block: clamp(56px, 10vw, 108px) clamp(48px, 8vw, 84px);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 380px);
+    gap: clamp(28px, 6vw, 64px);
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .eyebrow{
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    margin: 0 0 18px;
+  }
+  .eyebrow::before{
+    content: "";
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-right: 9px;
+    box-shadow: 0 0 8px 1px rgba(200,255,77,0.6);
+    vertical-align: middle;
+  }
+  .wordmark{
+    margin: 0;
+    font-weight: 800;
+    line-height: 0.86;
+    letter-spacing: -0.045em;
+    text-transform: lowercase;
+    font-size: clamp(3.4rem, 11vw, 7.4rem);
+  }
+  .wordmark span{ color: var(--accent); }
+  .tagline{
+    margin: 22px 0 0;
+    max-width: 46ch;
+    font-size: clamp(1.05rem, 1.9vw, 1.32rem);
+    line-height: 1.5;
+    color: var(--fg);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .pitch{
+    margin: 16px 0 0;
+    max-width: 56ch;
+    color: var(--fg-dim);
+    font-size: 0.98rem;
+    line-height: 1.7;
+  }
+  .pitch code{
+    font-family: var(--mono);
+    font-size: 0.88em;
+    color: var(--fg);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+  }
+
+  .cta-row{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 32px;
+  }
+  .btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 0.84rem;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    padding: 13px 20px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+  .btn-primary{
+    background: var(--accent);
+    color: #0a0a0c;
+    font-weight: 700;
+  }
+  .btn-primary:hover{ transform: translateY(-1px); }
+  .btn-ghost{
+    border-color: var(--border-strong);
+    color: var(--fg);
+  }
+  .btn-ghost:hover{ border-color: var(--accent); color: var(--accent); }
+
+  /* ---------- tastegraph visual ---------- */
+  .graph-frame{
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-raised);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .graph-frame svg{ width: 88%; height: 88%; }
+  .graph-caption{
+    position: absolute;
+    bottom: 10px;
+    left: 12px;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-faint);
+  }
+
+  .spin-slow{ transform-origin: 160px 160px; animation: spin 60s linear infinite; }
+  .spin-slow-rev{ transform-origin: 160px 160px; animation: spin-rev 90s linear infinite; }
+  .pulse-node{ animation: pulse 3.4s ease-in-out infinite; transform-origin: center; }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  @keyframes spin-rev{ to{ transform: rotate(-360deg); } }
+  @keyframes pulse{ 0%, 100%{ opacity: 0.55; } 50%{ opacity: 1; } }
+
+  @media (prefers-reduced-motion: reduce){
+    .spin-slow, .spin-slow-rev, .pulse-node{ animation: none !important; }
+  }
+
+  /* ---------- sections ---------- */
+  section{ padding-block: clamp(56px, 9vw, 96px); border-bottom: 1px solid var(--border); }
+  .section-head{
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: clamp(32px, 5vw, 48px);
+  }
+  .section-num{
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+  }
+  .section-title{
+    margin: 0;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    text-transform: lowercase;
+  }
+  .section-sub{
+    margin: 8px 0 0;
+    color: var(--fg-dim);
+    max-width: 60ch;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  /* ---------- how it works ---------- */
+  .steps{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .step{
+    background: var(--bg);
+    padding: clamp(22px, 3vw, 30px);
+    position: relative;
+  }
+  .step-index{
+    font-family: var(--mono);
+    color: var(--accent);
+    font-size: 0.82rem;
+    display: block;
+    margin-bottom: 20px;
+  }
+  .step h3{
+    margin: 0 0 10px;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+    text-transform: lowercase;
+  }
+  .step p{
+    margin: 0;
+    color: var(--fg-dim);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  /* ---------- signals ---------- */
+  .signals-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .signal{
+    background: var(--bg);
+    padding: 22px;
+  }
+  .signal-tag{
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    background: rgba(200,255,77,0.08);
+    border: 1px solid rgba(200,255,77,0.25);
+    border-radius: 4px;
+    padding: 3px 7px;
+    margin-bottom: 14px;
+  }
+  .signal h3{
+    margin: 0 0 8px;
+    font-size: 0.98rem;
+    text-transform: lowercase;
+    letter-spacing: -0.01em;
+  }
+  .signal p{
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.6;
+    color: var(--fg-dim);
+  }
+
+  .windows-row{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+  }
+  .window-chip{
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--fg);
+    border: 1px solid var(--border-strong);
+    border-radius: 5px;
+    padding: 6px 11px;
+    background: var(--bg-raised);
+  }
+  .window-chip b{ color: var(--accent); font-weight: 700; }
+
+  /* ---------- roadmap ---------- */
+  .roadmap{
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--border);
+  }
+  .road-item{
+    display: grid;
+    grid-template-columns: 90px 1fr auto;
+    gap: 20px;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .road-index{
+    font-family: var(--mono);
+    color: var(--fg-faint);
+    font-size: 0.86rem;
+  }
+  .road-item.is-active .road-index{ color: var(--accent); }
+  .road-body h3{
+    margin: 0 0 4px;
+    font-size: 1rem;
+    text-transform: lowercase;
+    letter-spacing: -0.01em;
+  }
+  .road-body p{
+    margin: 0;
+    color: var(--fg-dim);
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+  .road-state{
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-faint);
+    white-space: nowrap;
+  }
+  .road-item.is-active .road-state{ color: var(--accent); }
+
+  /* ---------- footer ---------- */
+  footer{ padding-block: 44px 60px; }
+  .foot-grid{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .foot-mark{
+    font-weight: 800;
+    text-transform: lowercase;
+    letter-spacing: -0.03em;
+    font-size: 1.4rem;
+    margin: 0 0 8px;
+  }
+  .foot-mark span{ color: var(--accent); }
+  .foot-note{
+    color: var(--fg-dim);
+    font-size: 0.86rem;
+    max-width: 40ch;
+    line-height: 1.6;
+    margin: 0;
+  }
+  .foot-links{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 0.84rem;
+  }
+  .foot-links a{ text-decoration: none; color: var(--fg-dim); }
+  .foot-links a:hover{ color: var(--accent); }
+  .foot-privacy{
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.02em;
+    color: var(--fg-faint);
+  }
+  .foot-privacy .dot{ color: var(--accent); }
+
+  @media (max-width: 860px){
+    .hero{ grid-template-columns: 1fr; }
+    .graph-frame{ max-width: 380px; margin: 0 auto; }
+    .steps{ grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px){
+    .road-item{ grid-template-columns: 50px 1fr; }
+    .road-state{ grid-column: 2; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="nav">
+    <a class="nav-mark" href="#top">deepcut</a>
+    <span class="nav-status">invite&nbsp;only</span>
+  </nav>
+</div>
+
+<main id="top">
+  <div class="wrap">
+    <section class="hero" style="border-bottom:none; padding-bottom: 0;" aria-labelledby="hero-title">
+      <div>
+        <p class="eyebrow">now building tastegraphs from real spotify history</p>
+        <h1 id="hero-title" class="wordmark">deep<span>cut</span></h1>
+        <p class="tagline">The weighted map of what you actually listen to &mdash; not what you streamed once by accident.</p>
+        <p class="pitch">
+          Deepcut ingests your full lifetime Spotify history (GDPR export, then live polling) and turns it into a
+          <code>tastegraph</code>: rolling play counts, completion rates, and artist &amp; genre affinities, all
+          weighted and recomputed as you listen. It's the taste model Spotify never gives you back.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="mailto:ben4mn@gmail.com?subject=Deepcut%20invite">Request an invite</a>
+          <a class="btn btn-ghost" href="https://github.com/ben4mn/deepcut" target="_blank" rel="noopener">View on GitHub</a>
+        </div>
+      </div>
+
+      <div class="graph-frame" aria-hidden="true">
+        <svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+          <g class="spin-slow">
+            <circle cx="160" cy="160" r="140" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="1 7"/>
+          </g>
+          <g class="spin-slow-rev">
+            <circle cx="160" cy="160" r="112" fill="none" stroke="var(--border-strong)" stroke-width="1" stroke-dasharray="2 3"/>
+          </g>
+          <g class="spin-slow">
+            <circle cx="160" cy="160" r="82" fill="none" stroke="rgba(200,255,77,0.25)" stroke-width="1.4" stroke-dasharray="0.5 6"/>
+          </g>
+
+          <!-- edges: weighted lines from center to nodes -->
+          <line x1="160" y1="160" x2="160" y2="46"  stroke="rgba(200,255,77,0.55)" stroke-width="2.6"/>
+          <line x1="160" y1="160" x2="256" y2="104" stroke="rgba(241,239,230,0.35)" stroke-width="1.6"/>
+          <line x1="160" y1="160" x2="266" y2="206" stroke="rgba(241,239,230,0.22)" stroke-width="1"/>
+          <line x1="160" y1="160" x2="196" y2="274" stroke="rgba(200,255,77,0.35)" stroke-width="1.8"/>
+          <line x1="160" y1="160" x2="76"  y2="248" stroke="rgba(241,239,230,0.3)" stroke-width="1.4"/>
+          <line x1="160" y1="160" x2="54"  y2="150" stroke="rgba(241,239,230,0.18)" stroke-width="1"/>
+          <line x1="160" y1="160" x2="92"  y2="66"  stroke="rgba(200,255,77,0.28)" stroke-width="1.3"/>
+          <!-- secondary edges between peripheral nodes -->
+          <line x1="160" y1="46"  x2="256" y2="104" stroke="rgba(241,239,230,0.10)" stroke-width="1"/>
+          <line x1="256" y1="104" x2="266" y2="206" stroke="rgba(241,239,230,0.10)" stroke-width="1"/>
+          <line x1="76"  y1="248" x2="196" y2="274" stroke="rgba(241,239,230,0.10)" stroke-width="1"/>
+          <line x1="54"  y1="150" x2="92"  y2="66"  stroke="rgba(241,239,230,0.10)" stroke-width="1"/>
+
+          <!-- center node: you -->
+          <circle cx="160" cy="160" r="13" fill="var(--accent)"/>
+          <circle class="pulse-node" cx="160" cy="160" r="13" fill="none" stroke="var(--accent)" stroke-width="1"/>
+
+          <!-- weighted taste nodes -->
+          <circle cx="160" cy="46"  r="9" fill="var(--accent)"/>
+          <circle cx="256" cy="104" r="6.5" fill="#f1efe6" fill-opacity="0.85"/>
+          <circle cx="266" cy="206" r="4.5" fill="#f1efe6" fill-opacity="0.55"/>
+          <circle cx="196" cy="274" r="7.5" fill="var(--accent)" fill-opacity="0.85"/>
+          <circle cx="76"  cy="248" r="6" fill="#f1efe6" fill-opacity="0.7"/>
+          <circle cx="54"  cy="150" r="4" fill="#f1efe6" fill-opacity="0.45"/>
+          <circle cx="92"  cy="66"  r="5.5" fill="var(--accent)" fill-opacity="0.6"/>
+        </svg>
+        <span class="graph-caption">fig.1 — tastegraph, live weighting</span>
+      </div>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section aria-labelledby="how-title">
+      <div class="section-head">
+        <span class="section-num">01</span>
+        <div>
+          <h2 id="how-title" class="section-title">how it works</h2>
+          <p class="section-sub">Three steps. No manual tagging, no surveys about your favorite genre &mdash; the graph is built entirely from what you actually played.</p>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="step-index">01</span>
+          <h3>sign in with spotify</h3>
+          <p>OAuth, read-only. We never see your password, and we never write to your account.</p>
+        </div>
+        <div class="step">
+          <span class="step-index">02</span>
+          <h3>import your history</h3>
+          <p>Your GDPR export backfills your entire lifetime of streams; live polling keeps it current from day one.</p>
+        </div>
+        <div class="step">
+          <span class="step-index">03</span>
+          <h3>your tastegraph builds itself</h3>
+          <p>Signals recompute continuously &mdash; rolling windows, affinities, and completion rates, all weighted, no input required.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section aria-labelledby="signals-title">
+      <div class="section-head">
+        <span class="section-num">02</span>
+        <div>
+          <h2 id="signals-title" class="section-title">the signals</h2>
+          <p class="section-sub">Every number that makes up your tastegraph. Nothing here is guessed &mdash; it's all derived from your raw stream history.</p>
+        </div>
+      </div>
+
+      <div class="signals-grid">
+        <div class="signal">
+          <span class="signal-tag">ALL&#8209;TIME</span>
+          <h3>all-time favorites</h3>
+          <p>Lifetime play counts across your entire history &mdash; your definitive top tracks and artists, no time limit.</p>
+        </div>
+        <div class="signal">
+          <span class="signal-tag">R30&ndash;R360</span>
+          <h3>rolling windows</h3>
+          <p>Play counts over trailing 30 / 90 / 180 / 360-day windows &mdash; what's actually on repeat right now vs. six months ago.</p>
+        </div>
+        <div class="signal">
+          <span class="signal-tag">COMPLETION</span>
+          <h3>completion rate</h3>
+          <p>Skips vs. full listens per track, weighted higher than raw play count so skimmed songs don't skew the graph.</p>
+        </div>
+        <div class="signal">
+          <span class="signal-tag">ARTIST</span>
+          <h3>artist affinity</h3>
+          <p>Cross-track loyalty scoring per artist &mdash; how deep you go into a catalog, not just whether you hit play once.</p>
+        </div>
+        <div class="signal">
+          <span class="signal-tag">GENRE</span>
+          <h3>genre affinity</h3>
+          <p>Inferred taste clusters spanning your whole library, updated as your listening drifts across genres.</p>
+        </div>
+        <div class="signal">
+          <span class="signal-tag">ERA</span>
+          <h3>era snapshots</h3>
+          <p>Reconstructions of what your taste looked like at any point in your listening history, not just today.</p>
+        </div>
+      </div>
+
+      <div class="windows-row" aria-hidden="true">
+        <span class="window-chip"><b>R30</b> — last 30 days</span>
+        <span class="window-chip"><b>R90</b> — last 90 days</span>
+        <span class="window-chip"><b>R180</b> — last 180 days</span>
+        <span class="window-chip"><b>R360</b> — last 360 days</span>
+      </div>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section aria-labelledby="roadmap-title">
+      <div class="section-head">
+        <span class="section-num">03</span>
+        <div>
+          <h2 id="roadmap-title" class="section-title">where it's going</h2>
+          <p class="section-sub">The tastegraph is the foundation. Here's what gets built on top of it.</p>
+        </div>
+      </div>
+
+      <div class="roadmap">
+        <div class="road-item is-active">
+          <span class="road-index">i.</span>
+          <div class="road-body">
+            <h3>auto-generated playlists</h3>
+            <p>Top Songs of All Time, mood playlists, and era mixes &mdash; generated straight from your tastegraph, no curation required.</p>
+          </div>
+          <span class="road-state">in progress</span>
+        </div>
+        <div class="road-item">
+          <span class="road-index">ii.</span>
+          <div class="road-body">
+            <h3>taste prediction</h3>
+            <p>Score new music against your graph before you hit play &mdash; will-you-like-it, not just because-you-listened-to.</p>
+          </div>
+          <span class="road-state">planned</span>
+        </div>
+        <div class="road-item">
+          <span class="road-index">iii.</span>
+          <div class="road-body">
+            <h3>friend analytics</h3>
+            <p>Compare tastegraphs across friends, find shared-taste overlap, and surface who actually has your ear.</p>
+          </div>
+          <span class="road-state">planned</span>
+        </div>
+        <div class="road-item">
+          <span class="road-index">iv.</span>
+          <div class="road-body">
+            <h3>ai dj / mcp</h3>
+            <p>An MCP server that hands AI assistants your real taste context &mdash; weighted signals, not just play/stop events.</p>
+          </div>
+          <span class="road-state">planned</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <p class="foot-mark">deep<span>cut</span></p>
+        <p class="foot-note">Invite-only while Spotify's developer mode caps us at 5 users. Requesting early gets you in the next batch.</p>
+      </div>
+      <nav class="foot-links" aria-label="Footer">
+        <a href="mailto:ben4mn@gmail.com?subject=Deepcut%20invite">Request an invite &rarr;</a>
+        <a href="https://github.com/ben4mn/deepcut" target="_blank" rel="noopener">View on GitHub &rarr;</a>
+      </nav>
+    </div>
+    <p class="foot-privacy"><span class="dot">&bull;</span> no Spotify data leaves your instance &nbsp;<span class="dot">&bull;</span> read-only OAuth &nbsp;<span class="dot">&bull;</span> built by <a href="mailto:ben4mn@gmail.com">ben4mn</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

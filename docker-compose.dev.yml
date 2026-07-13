@@ -1,0 +1,23 @@
+# Local dev: only Postgres runs in Docker. `next dev` and the worker run
+# natively on the host against this database (see .env DATABASE_URL).
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: deepcut
+      POSTGRES_PASSWORD: deepcut
+      POSTGRES_DB: deepcut
+    ports:
+      - "5432:5432"
+    volumes:
+      - deepcut_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U deepcut -d deepcut"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  deepcut_pgdata:
+    name: deepcut_pgdata

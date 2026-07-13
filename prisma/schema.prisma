@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlaySource {
+  POLL
+  EXPORT
+  EXPORT_ACCOUNT
+}
+
+enum EntityType {
+  TRACK
+  ARTIST
+  GENRE
+}
+
+model User {
+  id          String   @id @default(cuid())
+  spotifyId   String   @unique
+  email       String?
+  displayName String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+
+  account   SpotifyAccount?
+  plays     Play[]
+  snapshots TasteSnapshot[]
+  imports   ExportImport[]
+}
+
+model SpotifyAccount {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessTokenEnc   String
+  refreshTokenEnc  String
+  expiresAt        DateTime
+  scope            String
+  lastPolledAt     DateTime?
+  // recently-played after-cursor, unix ms
+  pollCursor       BigInt?
+}
+
+model Artist {
+  id         String  @id @default(cuid())
+  name       String
+  spotifyUri String? @unique
+  genres     String[] @default([])
+
+  tracks Track[]
+
+  @@index([name])
+}
+
+model Track {
+  id         String  @id @default(cuid())
+  spotifyUri String  @unique
+  name       String
+  artistId   String?
+  artist     Artist? @relation(fields: [artistId], references: [id], onDelete: SetNull)
+  // denormalized, always set
+  artistName String
+  albumName  String?
+  durationMs Int?
+
+  plays Play[]
+
+  @@index([artistName])
+}
+
+model Play {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trackId     String
+  track       Track      @relation(fields: [trackId], references: [id])
+  // end-of-stream timestamp
+  playedAt    DateTime
+  msPlayed    Int?
+  skipped     Boolean?
+  reasonStart String?
+  reasonEnd   String?
+  shuffle     Boolean?
+  context     String?
+  source      PlaySource
+
+  @@unique([userId, trackId, playedAt])
+  @@index([userId, playedAt])
+  @@index([userId, source])
+}
+
+model TasteSnapshot {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  computedAt  DateTime   @default(now())
+  entityType  EntityType
+  // trackId | artistId | genre name
+  entityId    String
+  // ALL | R30 | R90 | R180 | R360 | year like Y2026
+  window      String
+  playCount   Int
+  msPlayed    BigInt     @default(0)
+  // avg completion 0-1
+  playPctAvg  Float?
+  score       Float      @default(0)
+
+  @@unique([userId, entityType, entityId, window])
+  @@index([userId, window, entityType, score(sort: Desc)])
+}
+
+model ExportImport {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filename      String
+  // pending|processing|done|error
+  status        String    @default("pending")
+  rowsTotal     Int       @default(0)
+  rowsImported  Int       @default(0)
+  rowsSkipped   Int       @default(0)
+  error         String?
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+}
