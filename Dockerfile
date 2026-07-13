@@ -39,7 +39,7 @@ COPY --from=builder /app/package.json ./package.json
 USER nextjs
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
+CMD ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy && node server.js"]
 
 # ---- worker: full node_modules + tsx, runs cron jobs ----
 FROM node:22-alpine AS worker

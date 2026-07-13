@@ -131,7 +131,7 @@
     font-size: 0.98rem;
     line-height: 1.7;
   }
-  .pitch code{
+  .pitch code, .step p code{
     font-family: var(--mono);
     font-size: 0.88em;
     color: var(--fg);
@@ -268,6 +268,35 @@
     color: var(--fg-dim);
     font-size: 0.92rem;
     line-height: 1.6;
+  }
+  .step p a{ color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+  .step p strong{ color: var(--fg); font-weight: 700; }
+
+  /* ---------- get your data ---------- */
+  .data-steps{ grid-template-columns: 1fr; }
+  .data-steps .step{
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: clamp(16px, 3vw, 28px);
+    align-items: baseline;
+  }
+  .data-steps .step-index{ margin-bottom: 0; }
+  .data-note{
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: clamp(20px, 3vw, 28px);
+  }
+  .data-note .signal-tag{ margin-bottom: 0; flex-shrink: 0; margin-top: 2px; }
+  .data-note p{
+    margin: 0;
+    color: var(--fg-dim);
+    font-size: 0.9rem;
+    line-height: 1.65;
+    max-width: 62ch;
+  }
+  @media (max-width: 560px){
+    .data-steps .step{ grid-template-columns: 1fr; gap: 8px; }
   }
 
   /* ---------- signals ---------- */
@@ -523,9 +552,68 @@
   </div>
 
   <div class="wrap">
-    <section aria-labelledby="signals-title">
+    <section aria-labelledby="data-title">
       <div class="section-head">
         <span class="section-num">02</span>
+        <div>
+          <h2 id="data-title" class="section-title">get your data</h2>
+          <p class="section-sub">Spotify doesn't hand your full listening history over through the API &mdash; you have to request the export yourself. Five steps; most of the wait is Spotify's, not yours.</p>
+        </div>
+      </div>
+
+      <div class="steps data-steps">
+        <div class="step">
+          <span class="step-index">01</span>
+          <div>
+            <h3>request your history</h3>
+            <p>Go to <a href="https://www.spotify.com/account/privacy/" target="_blank" rel="noopener">spotify.com/account/privacy</a> and scroll to &ldquo;Download your data.&rdquo; Uncheck &ldquo;Account data&rdquo; if you like, but check <strong>&ldquo;Extended streaming history&rdquo;</strong> &mdash; it's the only export with every play, skip, and timestamp since your account began. Click &ldquo;Request data.&rdquo;</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-index">02</span>
+          <div>
+            <h3>confirm the email</h3>
+            <p>Spotify sends a &ldquo;Confirm your data request&rdquo; email right away. <strong>You have to click the confirmation link</strong> or the request silently never starts &mdash; this is the step that trips up almost everyone. Check spam if it doesn't land in a few minutes.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-index">03</span>
+          <div>
+            <h3>wait for the second email</h3>
+            <p>Once confirmed, Spotify builds the export in the background &mdash; usually 1&ndash;5 days, officially up to 30. A second email arrives with a download link, valid for about 14 days.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-index">04</span>
+          <div>
+            <h3>download the zip</h3>
+            <p>It'll be named something like <code>my_spotify_data.zip</code> and contain files like <code>Streaming_History_Audio_2016-2019_0.json</code>. Don't unzip it &mdash; Deepcut takes the ZIP as-is.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-index">05</span>
+          <div>
+            <h3>upload it in deepcut</h3>
+            <p>Sign in, open your dashboard, and drop the ZIP into the import card. Your tastegraph builds from your full lifetime of listening within minutes.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="data-note">
+        <span class="signal-tag">PRIVATE</span>
+        <p>The ZIP is parsed on Ben's self-hosted instance, your plays are stored under your account only, and the raw file isn't retained after import.</p>
+      </div>
+      <div class="data-note">
+        <span class="signal-tag">ONE&#8209;TIME</span>
+        <p>Deepcut's live tracker records everything you play from the moment you sign up, so this export only has to be done once &mdash; an annual refresh covers the rest.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <section aria-labelledby="signals-title">
+      <div class="section-head">
+        <span class="section-num">03</span>
         <div>
           <h2 id="signals-title" class="section-title">the signals</h2>
           <p class="section-sub">Every number that makes up your tastegraph. Nothing here is guessed &mdash; it's all derived from your raw stream history.</p>
@@ -577,7 +665,7 @@
   <div class="wrap">
     <section aria-labelledby="roadmap-title">
       <div class="section-head">
-        <span class="section-num">03</span>
+        <span class="section-num">04</span>
         <div>
           <h2 id="roadmap-title" class="section-title">where it's going</h2>
           <p class="section-sub">The tastegraph is the foundation. Here's what gets built on top of it.</p>
