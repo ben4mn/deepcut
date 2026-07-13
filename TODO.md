@@ -15,6 +15,11 @@ https://ben4mn.github.io/deepcut/, stack running on the Debian box at http://192
 
 ## Next up (Phase 1 — taste engine v1)
 
+> Full blueprint: **docs/TASTEGRAPH-DESIGN.md** — event value model, three-clock decay,
+> calibration layer, 30+ derived signals with weights, the playlist portfolio, and the
+> 10-mechanism prediction engine. Build order is §9 of that doc.
+
+
 - [ ] Genre enrichment pipeline: MusicBrainz (canonical genres, ~1 req/s) + Last.fm tags, keyed off track/artist; populates `Artist.genres`, unlocks GENRE snapshots (currently TODO in `lib/tastegraph/compute.ts`)
 - [ ] Skip-signal: negative weighting from `skipped` + low `msPlayed` (data already stored, excluded from scores)
 - [ ] Recency decay functions on scores ("split relationship into time" from the original design notes)
